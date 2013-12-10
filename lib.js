@@ -1,9 +1,14 @@
 goog.provide('lib');
 goog.provide('lib.color');
 
+goog.require('lime.animation.FadeTo');
+goog.require('lime.animation.MoveBy');
+goog.require('lime.animation.Spawn');
+
 var FONT_SIZE = 24;
 var FONT_COLOR = '#000';
 var FONT_FAMILY = 'Arial';
+var TILE_SIZE = 44;
 
 // If one arg is given: generate a random number in [0, num1).
 // If two args are given: generate a random number in [num1, num2).
@@ -31,6 +36,19 @@ lib.label = function(text) {
     lbl.createDomElement();
     goog.style.setStyle(lbl.domElement, {cursor: 'default'});
     return lbl;
+};
+
+// Creates a label that will float up and fade out.
+lib.pointLabel = function(num) {
+    if (num >= 0) {
+	num = "+"+num;
+    }
+    var label = lib.label(num);
+    label.runAction(
+	new lime.animation.Spawn(
+	    new lime.animation.MoveBy(0, -TILE_SIZE),
+	    new lime.animation.FadeTo(0)));
+    return label;
 };
 
 // Takes two sprites, centers one in the other.
