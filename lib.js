@@ -1,6 +1,7 @@
 goog.provide('lib');
 goog.provide('lib.color');
 
+goog.require('lib.style');
 goog.require('lime.animation.FadeTo');
 goog.require('lime.animation.MoveBy');
 goog.require('lime.animation.Spawn');
@@ -33,8 +34,7 @@ lib.label = function(text) {
     var lbl = new lime.Label().setText(text).setFontSize(FONT_SIZE)
         .setFontColor(FONT_COLOR)
         .setFontFamily(FONT_FAMILY).setMultiline(true);
-    lbl.createDomElement();
-    goog.style.setStyle(lbl.domElement, {cursor: 'default'});
+    lib.style.setCursorStyle(lbl, 'default');
     return lbl;
 };
 

@@ -1,22 +1,38 @@
-goog.provide('lib.AddFacing');
+goog.provide('lib.Direction');
 
-goog.require('lib');
+lib.Direction = {};
 
-var LEFT = 0;
-var RIGHT = 1;
-
-lib.AddFacing = function(sprite) {
-    sprite.facing_ = shepherd.lib.random(2);
-    sprite.changeDirection = shepherd.lib.AddFacing.change;
-    sprite.changeDirection();
+// This assumes sprite start facing right, since I tend to draw them that way.
+lib.Direction.attach = function(sprite, opt_random) {
+    sprite.changeDirection = lib.Direction.change;
+    if (opt_random) {
+	sprite.facing_ = shepherd.lib.random(2);
+	sprite.changeDirection();
+    } else {
+	lib.Direction.faceRight(sprite);
+    }
 };
 
-lib.AddFacing.change = function() {
-    if (this.facing_ == LEFT) {
-        this.setScale(1, 1);
-        this.facing_ = RIGHT;
+lib.Direction.LEFT = 0;
+lib.Direction.RIGHT = 1;
+
+// Switches the direction the sprite "this" is facing.
+// @return this
+lib.Direction.change = function() {
+    if (this.facing_ == lib.Direction.LEFT) {
+	lib.Direction.faceRight(this);
     } else {
-        this.setScale(-1, 1);
-        this.facing_ = LEFT;
+	lib.Direction.faceLeft(this);
     }
+    return this;
+};
+
+lib.Direction.faceLeft = function(sprite) {
+    sprite.setScale(-1, 1);
+    sprite.facing_ = lib.Direction.LEFT;
+};
+
+lib.Direction.faceRight = function(sprite) {
+    sprite.setScale(1, 1);
+    sprite.facing_ = lib.Direction.RIGHT;
 };
