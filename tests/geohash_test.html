@@ -56,6 +56,29 @@ function testAddAndFind() {
     assertEquals(thing, results[0]);
 };
 
+function testAddAndDontFind() {
+    var map = create();
+    var pos = new goog.math.Coordinate(12, 73);
+    var thing = new Thing().setPosition(pos);
+    map.add(thing);
+
+    var other_pos = new goog.math.Coordinate(25, -30);
+    var results = map.findAtPoint(other_pos);
+    assertEquals(0, results.length);
+    results = map.findInBox(new goog.math.Box(0, -50, 20, -70));
+    assertEquals(0, results.length);
+};
+
+function testAddAndFindBigBox() {
+    var map = create();
+    var pos = new goog.math.Coordinate(12, 73);
+    var thing = new Thing().setPosition(pos);
+    map.add(thing);
+
+    var results = map.findInBox(new goog.math.Box(-50, 100, 90, -75));
+    assertEquals(1, results.length);
+};
+
 </script>
 </body>
 </html>
