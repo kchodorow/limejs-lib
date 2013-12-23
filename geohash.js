@@ -7,13 +7,13 @@ goog.provide('lib.collision.GeoHash');
 lib.collision.GeoHash = function(box, opt_bits) {
     this.box_ = box;
     this.bits_ = opt_bits || 6;
+
+    // The box will be split into this many divisions.
+    var divisions = Math.pow(2, this.bits_);
+    // Every small box will contain this many pixels.
     this.px_per_bit_ = new goog.math.Coordinate(
-	this.box_.right - this.box_.left, this.box_.bottom-this.box_.top);
-    var count = this.bits_;
-    for (var c = 0; c < count; c++) {
-	this.px_per_bit_.x /= 2;
-	this.px_per_bit_.y /= 2;
-    }
+	(this.box_.right - this.box_.left)/divisions, 
+	(this.box_.bottom - this.box_.top)/divisions);
 
     this.map_ = {};
 };
@@ -36,13 +36,13 @@ lib.collision.GeoHash.prototype.setup_ = function(thing, tags) {
 lib.collision.GeoHash.prototype.geohash_ = function(pos) {
     var result = 0;
     if (!this.box_.contains(pos)) {
-	return result;
+	return null;
     }
 
     var box = this.box_.clone();
     // Modify box to be smaller and smaller as bits are resolved.
     for (var i = 0; i < this.bits_; i++) {
-	var midline_x = (box.right - box.left)/2;
+	var midline_x = box.left + (box.right - box.left)/2;
 	if (pos.x <= midline_x) {
 	    box.right = midline_x;
 	} else {
@@ -51,7 +51,7 @@ lib.collision.GeoHash.prototype.geohash_ = function(pos) {
 	}
 	result <<= 1;
 
-	var midline_y = (box.bottom - box.top)/2;
+	var midline_y = box.top + (box.bottom - box.top)/2;
 	if (pos.y <= midline_y) {
 	    box.bottom = midline_y;
 	} else {
@@ -61,13 +61,6 @@ lib.collision.GeoHash.prototype.geohash_ = function(pos) {
 	result <<= 1;
     }
     return result;
-};
-
-// Convert a box in position coordinates to one in geohash coordinates.
-lib.collision.GeoHash.prototype.geobox_ = function(box) {
-    return new goog.math.Box(
-	this.geohash_(box.top), this.geohash_(box.right), 
-	this.geohash_(box.bottom), this.geohash_(box.left));
 };
 
 // Write operations.
@@ -101,13 +94,16 @@ lib.collision.GeoHash.prototype.remove = function(thing) {
 
 // Read operations.
 // Find nearest within a box optionally filtered by tag.
+// @return array A list of results or null if the box was invalid.
 lib.collision.GeoHash.prototype.findInBox = function(box) {
     var results = [];
-    var geo_box = this.geobox_(box);
-    for (var x = geo_box.left; x < geo_box.right; ++x) {
-	for (var y = geo_box.top; y < geo_box.bottom; y++) {
-	    var stuff = 
-		this.map_[this.geohash_(new goog.math.Coordinate(x, y))];
+    for (var x = box.left; x < box.right; x += this.px_per_bit_.x) {
+	for (var y = box.top; y < box.bottom; y += this.px_per_bit_.y) {
+	    var hash = this.geohash_(new goog.math.Coordinate(x, y));
+	    if (hash === null) {
+		return null;
+	    }
+	    var stuff = this.map_[hash];
 	    for (var uid in stuff) {
 		if (box.contains(stuff[uid].getPosition())) {
 		    results.push(stuff[uid]);
@@ -120,7 +116,12 @@ lib.collision.GeoHash.prototype.findInBox = function(box) {
 
 // At a given point.
 lib.collision.GeoHash.prototype.findAtPoint = function(point) {
-    var stuff = this.map_[this.geohash_(point)];
+    var results = [];
+    var hash = this.geohash_(point);
+    if (hash === null) {
+	return null;
+    }
+    var stuff = this.map_[hash];
     for (var uid in stuff) {
 	results.push(stuff[uid]);
     }

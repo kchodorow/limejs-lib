@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>LimeJs Helper Library Tests - GeoHash</title>
+<script type="text/javascript" src="../../closure/closure/goog/base.js"></script>
+<script>
+goog.require('lib.collision.GeoHash');
+
+goog.require('goog.math.Box');
+goog.require('goog.testing.jsunit');
+</script>
+</head>
+<body>
+<script>
+
+function create() {
+    var box = new goog.math.Box(-100, 100, 100, -100);
+    var bits = 4;
+    return new lib.collision.GeoHash(box, bits);
+};
+
+var Thing = function() {
+    this.position_ = new goog.math.Coordinate(0, 0);
+};
+
+Thing.prototype.getPosition = function() {
+    return this.position_;
+};
+
+Thing.prototype.setPosition = function(val) {
+    this.position_ = val;
+    return this;
+};
+
+function testCreate() {
+    var box = new goog.math.Box(-100, 100, 100, -100);
+    var bits = 4;
+    var map = new lib.collision.GeoHash(box, bits);
+    assertEquals(box, map.box_);
+    assertEquals(bits, map.bits_);
+    assertEquals(12.5, map.px_per_bit_.x);
+};
+
+function testAddAndFind() {
+    var map = create();
+    var pos = new goog.math.Coordinate(12, 73);
+    var thing = new Thing().setPosition(pos);
+    map.add(thing);
+
+    var results = map.findAtPoint(pos);
+    assertEquals(1, results.length);
+    assertEquals(thing, results[0]);
+    results = map.findInBox(new goog.math.Box(72, 13, 74, 11));
+    assertEquals(1, results.length);
+    assertEquals(thing, results[0]);
+};
+
+</script>
+</body>
+</html>
