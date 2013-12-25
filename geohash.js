@@ -21,13 +21,11 @@ lib.collision.GeoHash = function(box, opt_bits) {
 // Attach geohashing utilities to an object.  Adds a geohash_ property on the
 // object.
 // @returns number The UID of the object.
-lib.collision.GeoHash.prototype.setup_ = function(thing, tags) {
+lib.collision.GeoHash.prototype.setup_ = function(thing) {
     if ('geohash_' in thing) {
 	return;
     }
-    thing.geohash_ = {
-	hash_: this.geohash_(thing.getPosition()),
-	tags_: tags};
+    thing.geohash_ = {hash: this.geohash_(thing.getPosition())};
     return goog.getUid(thing);
 };
 
@@ -70,18 +68,18 @@ lib.collision.GeoHash.prototype.geohash_ = function(pos) {
 
 // Write operations.
 // Insert.
-lib.collision.GeoHash.prototype.add = function(thing, tags) {
-    var uid = this.setup_(thing, tags);
+lib.collision.GeoHash.prototype.add = function(thing) {
+    var uid = this.setup_(thing);
 
-    if (!(thing.geohash_.hash_ in this.map_)) {
-	this.map_[thing.geohash_.hash_] = {};
+    if (!(thing.geohash_.hash in this.map_)) {
+	this.map_[thing.geohash_.hash] = {};
     }
-    this.map_[thing.geohash_.hash_][uid] = thing;
+    this.map_[thing.geohash_.hash][uid] = thing;
 };
 
 // Update.
 lib.collision.GeoHash.prototype.updatePosition = function(thing) {
-    var hash = this.map_[thing.geohash_.hash_];
+    var hash = this.map_[thing.geohash_.hash];
     var uid = goog.getUid(thing);
     if (!hash || !(uid in hash)) {
 	return false;
@@ -93,34 +91,25 @@ lib.collision.GeoHash.prototype.updatePosition = function(thing) {
 
 // Remove.
 lib.collision.GeoHash.prototype.remove = function(thing) {
-    var hash = this.map_[thing.geohash_.hash_];
+    var hash = this.map_[thing.geohash_.hash];
     delete hash[goog.getUid(thing)];
 };
 
 // Read operations.
 // Find nearest within a box optionally filtered by tag.
 // @return array A list of results or null if the box was invalid.
-lib.collision.GeoHash.prototype.findInBox = function(box) {
+lib.collision.GeoHash.prototype.findInBox = function(box, tags) {
     var results = [];
-    for (var x = box.left; x < box.right; x += this.px_per_bit_.x) {
-	for (var y = box.top; y < box.bottom; y += this.px_per_bit_.y) {
-	    var hash = this.geohash_(new goog.math.Coordinate(x, y));
-	    if (hash === null) {
-		return null;
-	    }
-	    var stuff = this.map_[hash];
-	    for (var uid in stuff) {
-		if (box.contains(stuff[uid].getPosition())) {
-		    results.push(stuff[uid]);
-		}
-	    }
+    for (var x = box.left; x <= box.right; x += this.px_per_bit_.x) {
+	for (var y = box.top; y <= box.bottom; y += this.px_per_bit_.y) {
+	    results.concat(this.findAtPoint(new goog.math.Coordinate(x, y), tags));
 	}
     }
     return results;
 };
 
 // At a given point.
-lib.collision.GeoHash.prototype.findAtPoint = function(point) {
+lib.collision.GeoHash.prototype.findAtPoint = function(point, tags) {
     var results = [];
     var hash = this.geohash_(point);
     if (hash === null) {
@@ -128,7 +117,28 @@ lib.collision.GeoHash.prototype.findAtPoint = function(point) {
     }
     var stuff = this.map_[hash];
     for (var uid in stuff) {
-	results.push(stuff[uid]);
+	if (this.matchesTags(stuff[uid], tags)) {
+	    results.push(stuff[uid]);
+	}
     }
     return results;
+};
+
+lib.collision.GeoHash.prototype.matchesTags = function(thing, tags) {
+    if (!tags || tags.length == 0) {
+	// Not looking for a specific tag.
+	return true;
+    }
+
+    if (!('tags_' in thing) || thing.tags_.length == 0) {
+	// Looking for a specific tag, but the entry has none.
+	return false;
+    }
+
+    for (tag in tags) {
+	if (tag in thing.tags_) {
+	    return true;
+	}
+    }
+    return false;
 };
