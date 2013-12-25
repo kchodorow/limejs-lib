@@ -37,6 +37,17 @@ Example:
         .setBoundingBox(board)
         .setMap(map);
 
+## `lib.Direction`
+
+Adds directionality to a sprite.
+
+Example:
+
+    var sprite = new lime.Sprite();
+    goog.object.extend(sprite, new lib.Direction(this));
+    sprite.faceLeft();
+    sprite.changeDirection();
+
 ## `lib.style`
 
 This sets CSS attributes for sprites.
