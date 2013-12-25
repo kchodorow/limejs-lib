@@ -31,11 +31,16 @@ lib.collision.GeoHash.prototype.setup_ = function(thing, tags) {
     return goog.getUid(thing);
 };
 
+// Returns if the given point is on the mapped area.
+lib.collision.GeoHash.prototype.contains = function(point) {
+    return this.box_.contains(point);
+};
+
 // Convert a position to a geohash.
 // @param pos goog.math.Coordinate
 lib.collision.GeoHash.prototype.geohash_ = function(pos) {
     var result = 0;
-    if (!this.box_.contains(pos)) {
+    if (!this.contains(pos)) {
 	return null;
     }
 
