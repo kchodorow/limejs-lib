@@ -1,6 +1,7 @@
 goog.provide('lib.Debug');
 
 goog.require('lime.Sprite');
+goog.require('goog.ui.Tooltip');
 
 lib.Debug = {};
 
@@ -10,24 +11,28 @@ lib.Debug.attach = function(sprite) {
 	return;
     }
 
-    var info = new lime.Node();
-    info.appendChild(
-	lib.label(goog.getUid(sprite)).setSize(100, 50).setPosition(0, 50));
-    sprite.pos_label_ = lib.label(sprite.getPosition().toString())
-	.setSize(100, 50).setPosition(0, 100);
-    info.appendChild(sprite.pos_label_);
-    info.setHidden(true);
-    sprite.appendChild(info);
-
-    goog.events.listen(sprite, ['mouseover'], goog.bind(info.setHidden, info, false));
-    goog.events.listen(sprite, ['mouseout'], goog.bind(info.setHidden, info, true));
+    lib.Debug.addTooltip_(sprite);
     goog.events.listen(
 	sprite, ['mousedown', 'touchstart'], lib.Debug.changePos);
 };
 
+lib.Debug.addTooltip_ = function(sprite) {
+    if (!('domElement' in sprite)) {
+	sprite.createDomElement();
+    }
+
+    sprite.debug_tooltip_ = new goog.ui.Tooltip();
+    sprite.debug_tooltip_.attach(sprite.domElement);
+    sprite.debug_tooltip_.setText(lib.Debug.getTooltipText_(sprite));
+};
+
+lib.Debug.getTooltipText_ = function(sprite) {
+    return goog.getUid(sprite)+" "+sprite.getPosition().toString();
+}
+
 lib.Debug.changePos = function(e) {
     goog.events.listen(e.target, ['mousemove'], function(e) {
-	e.target.pos_label_.setText(e.target.getPosition().toString());
+	e.target.debug_tooltip_.setText(lib.Debug.getTooltipText_(e.target));
     });
     e.startDrag();
 };
