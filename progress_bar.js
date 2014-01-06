@@ -10,12 +10,13 @@ lib.ProgressBar = function() {
 
     this.setRadius(lib.ProgressBar.DEFAULT_RADIUS)
         .setSize(lib.ProgressBar.DEFAULT_WIDTH, lib.ProgressBar.DEFAULT_HEIGHT)
-	.setFill(lib.ProgressBar.DEFAULT_BG);
+        .setFill(lib.ProgressBar.DEFAULT_BG);
 
-    this.inner_ = new lime.RoundedRect().setRadius(lib.ProgressBar.DEFAULT_RADIUS)
+    this.inner_ = new lime.RoundedRect()
+        .setRadius(lib.ProgressBar.DEFAULT_RADIUS)
         .setSize(lib.ProgressBar.DEFAULT_WIDTH, lib.ProgressBar.DEFAULT_HEIGHT)
         .setFill(lib.ProgressBar.DEFAULT_FG)
-	.setAnchorPoint(0, .5).setPosition(-lib.ProgressBar.DEFAULT_WIDTH/2, 0);
+        .setAnchorPoint(0, .5).setPosition(-lib.ProgressBar.DEFAULT_WIDTH/2, 0);
     this.appendChild(this.inner_);
 };
 
@@ -30,22 +31,30 @@ lib.ProgressBar.DEFAULT_BG = 'rgb(0,0,0)';
 
 lib.ProgressBar.prototype.setBackgroundColor = function(rgb) {
     this.setFill(rgb);
+    return this;
 };
 
 lib.ProgressBar.prototype.setForegroundColor = function(rgb) {
     this.inner_.setFill(rgb);
+    return this;
 };
 
 lib.ProgressBar.prototype.setDimensions = function(size, opt_radius) {
     opt_radius = opt_radius || size.height/2;
     this.setSize(size);
     this.inner_.setSize(size).setPosition(-size.width/2, 0);
+    return this;
+};
+
+lib.ProgressBar.prototype.setMax = function(max) {
+    this.max_ = max;
+    return this;
 };
 
 lib.ProgressBar.prototype.updateProgress = function(amount) {
     this.current_ += amount;
     if (this.current_ > this.max_) {
-	this.current_ = this.max_;
+        this.current_ = this.max_;
     }
 
     var size = this.getSize();
