@@ -26,6 +26,10 @@ lib.random = function(num1, num2) {
     return Math.floor(Math.random()*(num2-num1))+num1;
 };
 
+lib.random.percentChance = function(percent) {
+    return lib.random(100) < percent;
+};
+
 // Create a label.  Requires:
 // *  FONT_SIZE
 // *  FONT_COLOR
@@ -41,13 +45,13 @@ lib.label = function(text) {
 // Creates a label that will float up and fade out.
 lib.pointLabel = function(num) {
     if (num >= 0) {
-	num = "+"+num;
+        num = "+"+num;
     }
     var label = lib.label(num);
     label.runAction(
-	new lime.animation.Spawn(
-	    new lime.animation.MoveBy(0, -TILE_SIZE),
-	    new lime.animation.FadeTo(0)));
+        new lime.animation.Spawn(
+            new lime.animation.MoveBy(0, -TILE_SIZE),
+            new lime.animation.FadeTo(0)));
     return label;
 };
 
