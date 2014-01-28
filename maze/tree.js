@@ -9,6 +9,18 @@ lib.maze.UNKNOWN = 0;
 lib.maze.CORRIDOR = 1;
 lib.maze.WALL = 2;
 
+// This is based on the "growing tree" algorithm discussed at
+// http://www.jamisbuck.org/presentations/rubyconf2011/index.html.
+//
+// To generate a map, run:
+//
+//    var maze = new lib.maze.Tree(new goog.math.Size(12, 8));
+//    maze.generate();
+//
+// This would generate a 12x8 tile map. It does not handle any drawing, only
+// creates a matrix of Tree.Nodes with appropriate top/left/bottom/right values
+// set. Use Tree.getSquare to get each Tree.Node for drawing.
+
 // @param size goog.math.Size
 lib.maze.Tree = function(size) {
     this.size_ = size;
@@ -22,6 +34,7 @@ lib.maze.Tree.prototype.pickNode = function() {
     return this.active_set_[lib.random(this.active_set_.length)];
 };
 
+// Creates the maze.
 lib.maze.Tree.prototype.generate = function() {
     this.active_set_.push(this.pickRandomNode_());
     while (this.active_set_.length > 0) {
@@ -29,10 +42,13 @@ lib.maze.Tree.prototype.generate = function() {
     }
 };
 
+// @returns goog.math.Size
 lib.maze.Tree.prototype.getSize = function() {
     return this.size_;
 };
 
+// @param goog.math.Coordinate The xy coordinate of the node to return.
+// @returns lib.maze.Tree.Node The node at the given position.
 lib.maze.Tree.prototype.getSquare = function(pos) {
     return this.board_.get(pos.x, pos.y);
 };
@@ -131,6 +147,7 @@ lib.maze.Tree.Node.prototype.getTop = function() {
     return this.top_;
 };
 
+// Utility class for getting a random direction.
 lib.maze.Tree.Dir = function() {
     this.dir_map_ = new goog.structs.Map();
     var north = new goog.math.Vec2(0, -1);
