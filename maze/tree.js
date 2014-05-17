@@ -1,4 +1,5 @@
 goog.provide('lib.maze.Tree');
+goog.provide('lib.maze.Tree.Node');
 
 goog.require('lib');
 goog.require('goog.structs.Map');
